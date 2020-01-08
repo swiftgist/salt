@@ -1,3 +1,6 @@
+# Powershell supports only TLS 1.0 by default. Add support up to TLS 1.2
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Tls,Tls11,Tls12'
+
 Function DownloadFileWithProgress {
 
     # Code for this function borrowed from http://poshcode.org/2461
@@ -12,10 +15,12 @@ Function DownloadFileWithProgress {
         [Parameter(Mandatory=$true)]
         [String] $url,
         [Parameter(Mandatory=$false)]
-        [String] $localFile = (Join-Path $pwd.Path $url.SubString($url.LastIndexOf('/'))) 
+        [String] $localFile = (Join-Path $pwd.Path $url.SubString($url.LastIndexOf('/')))
     )
 
+
     begin {
+        Write-Host -ForegroundColor DarkGreen "  download-module.DownloadFileWithProgress  $url"
         $client = New-Object System.Net.WebClient
         $Global:downloadComplete = $false
         $eventDataComplete = Register-ObjectEvent $client DownloadFileCompleted `

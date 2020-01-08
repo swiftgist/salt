@@ -54,7 +54,7 @@ passed in as a dict, or as a string to pull from pillars or minion config:
                 keyid: GKTADJGHEIQSXMKKRBJ08H
                 key: askdjghsdfjkghWupUjasdflkdfklgjsdfjajkghs
 '''
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, unicode_literals
 
 # Standard Libs
 import re
@@ -236,7 +236,8 @@ def absent(
     unsubscribe
         If True, unsubscribe all subcriptions to the SNS topic before
         deleting the SNS topic
-        .. versionadded:: Carbon
+
+        .. versionadded:: 2016.11.0
     '''
     ret = {'name': name, 'result': True, 'comment': '', 'changes': {}}
 

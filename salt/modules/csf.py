@@ -8,20 +8,20 @@ Support for Config Server Firewall (CSF)
 '''
 
 # Import Python Libs
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, unicode_literals
 import re
 
 # Import Salt Libs
+import salt.utils.path
 from salt.exceptions import CommandExecutionError, SaltInvocationError
-import salt.utils
-from salt.ext.six.moves import map
+from salt.ext import six
 
 
 def __virtual__():
     '''
     Only load if csf exists on the system
     '''
-    if salt.utils.which('csf') is None:
+    if salt.utils.path.which('csf') is None:
         return (False,
                 'The csf execution module cannot be loaded: csf unavailable.')
     else:
@@ -58,7 +58,9 @@ def exists(method,
     based on the method supplied. Returns false if
     not found.
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.exists allow 1.2.3.4
         salt '*' csf.exists tempdeny 1.2.3.4
     '''
@@ -75,7 +77,7 @@ def __csf_cmd(cmd):
     '''
     Execute csf command
     '''
-    csf_cmd = '{0} {1}'.format(salt.utils.which('csf'), cmd)
+    csf_cmd = '{0} {1}'.format(salt.utils.path.which('csf'), cmd)
     out = __salt__['cmd.run_all'](csf_cmd)
 
     if out['retcode'] != 0:
@@ -213,8 +215,7 @@ def _csf_to_list(option):
 
 
 def split_option(option):
-    l = re.split("(?: +)?\=(?: +)?", option)  # pylint: disable=W1401
-    return l
+    return re.split(r'(?: +)?\=(?: +)?', option)
 
 
 def get_option(option):
@@ -258,7 +259,7 @@ def skip_nics(nics, ipv6=False):
         ipv6 = '6'
     else:
         ipv6 = ''
-    nics_csv = ','.join(map(str, nics))
+    nics_csv = ','.join(six.moves.map(six.text_type, nics))
     result = __salt__['file.replace']('/etc/csf/csf.conf',
             pattern='^ETH{0}_DEVICE_SKIP(\ +)?\=(\ +)?".*"'.format(ipv6),  # pylint: disable=W1401
                                         repl='ETH{0}_DEVICE_SKIP = "{1}"'.format(ipv6, nics_csv))
@@ -343,7 +344,9 @@ def running():
     '''
     Check csf status
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.running
     '''
     return _status_csf()
@@ -353,7 +356,9 @@ def disable():
     '''
     Disable csf permanently
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.disable
     '''
     if _status_csf():
@@ -364,7 +369,9 @@ def enable():
     '''
     Activate csf if not running
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.enable
     '''
     if not _status_csf():
@@ -375,7 +382,9 @@ def reload():
     '''
     Restart csf
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.reload
     '''
     return __csf_cmd('-r')
@@ -387,7 +396,9 @@ def tempallow(ip=None, ttl=None, port=None, direction=None, comment=''):
     See :func:`_access_rule`.
     1- Add an IP:
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.tempallow 127.0.0.1 3600 port=22 direction='in' comment='# Temp dev ssh access'
     '''
     return _tmp_access_rule('tempallow', ip, ttl, port, direction, comment)
@@ -399,7 +410,9 @@ def tempdeny(ip=None, ttl=None, port=None, direction=None, comment=''):
     See :func:`_access_rule`.
     1- Add an IP:
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.tempdeny 127.0.0.1 300 port=22 direction='in' comment='# Brute force attempt'
     '''
     return _tmp_access_rule('tempdeny', ip, ttl, port, direction, comment)
@@ -418,7 +431,9 @@ def allow(ip,
     See :func:`_access_rule`.
     1- Add an IP:
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.allow 127.0.0.1
         salt '*' csf.allow 127.0.0.1 comment="Allow localhost"
     '''
@@ -445,7 +460,9 @@ def deny(ip,
     See :func:`_access_rule`.
     1- Deny an IP:
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.deny 127.0.0.1
         salt '*' csf.deny 127.0.0.1 comment="Too localhosty"
     '''
@@ -464,7 +481,9 @@ def unallow(ip):
     See :func:`_access_rule`.
     1- Deny an IP:
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.unallow 127.0.0.1
     '''
     return _access_rule('unallow', ip)
@@ -476,7 +495,9 @@ def undeny(ip):
     See :func:`_access_rule`.
     1- Deny an IP:
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.undeny 127.0.0.1
     '''
     return _access_rule('undeny', ip)
@@ -518,7 +539,9 @@ def allow_ports(ports, proto='tcp', direction='in'):
     UDP_IN, UDP_OUT, etc.
 
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.allow_ports ports="[22,80,443,4505,4506]" proto='tcp' direction='in'
     '''
 
@@ -528,7 +551,7 @@ def allow_ports(ports, proto='tcp', direction='in'):
     proto = proto.upper()
     direction = direction.upper()
     _validate_direction_and_proto(direction, proto)
-    ports_csv = ','.join(map(str, ports))
+    ports_csv = ','.join(six.moves.map(six.text_type, ports))
     directions = build_directions(direction)
 
     for direction in directions:
@@ -546,7 +569,9 @@ def get_ports(proto='tcp', direction='in'):
     e.g. - TCP_IN, TCP_OUT, UDP_IN, UDP_OUT, etc..
 
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.allow_port 22 proto='tcp' direction='in'
     '''
 
@@ -590,7 +615,9 @@ def allow_port(port, proto='tcp', direction='both'):
     Takes a single port instead of a list of ports.
 
     CLI Example:
+
     .. code-block:: bash
+
         salt '*' csf.allow_port 22 proto='tcp' direction='in'
     '''
 

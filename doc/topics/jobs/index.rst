@@ -16,13 +16,13 @@ Salt Minions maintain a *proc* directory in the Salt ``cachedir``. The *proc*
 directory maintains files named after the executed job ID. These files contain
 the information about the current running jobs on the minion and allow for
 jobs to be looked up. This is located in the *proc* directory under the
-cachedir, with a default configuration it is under ``/var/cache/salt/proc``.
+cachedir, with a default configuration it is under ``/var/cache/salt/{master|minion}/proc``.
 
 Functions in the saltutil Module
 ================================
 
 Salt 0.9.7 introduced a few new functions to the
-:doc:`saltutil</ref/modules/all/salt.modules.saltutil>` module for managing
+:mod:`saltutil<salt.modules.saltutil>` module for managing
 jobs. These functions are:
 
 1. ``running``
@@ -108,8 +108,8 @@ Scheduling can be enabled by multiple methods:
 - Minion pillar data.  Schedule is implemented by refreshing the minion's pillar data,
   for example by using ``saltutil.refresh_pillar``.
 
-- The :doc:`schedule state</ref/states/all/salt.states.schedule>` or
-  :doc:`schedule module</ref/modules/all/salt.modules.schedule>`
+- The :mod:`schedule state<salt.states.schedule>` or
+  :mod:`schedule module<salt.modules.schedule>`
 
 .. note::
 
@@ -210,6 +210,28 @@ localtime.
 
 This will schedule the command: ``state.sls httpd test=True`` at 5:00 PM on
 Monday, Wednesday and Friday, and 3:00 PM on Tuesday and Thursday.
+
+.. code-block:: yaml
+
+    schedule:
+      job1:
+        function: state.sls
+        args:
+          - httpd
+        kwargs:
+          test: True
+        when:
+          - 'tea time'
+
+.. code-block:: yaml
+
+    whens:
+      tea time: 1:40pm
+      deployment time: Friday 5:00pm
+
+The Salt scheduler also allows custom phrases to be used for the `when`
+parameter.  These `whens` can be stored as either pillar values or
+grain values.
 
 .. code-block:: yaml
 

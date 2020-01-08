@@ -6,6 +6,9 @@ Management of Influxdb databases
 (compatible with InfluxDB version 0.9+)
 '''
 
+# Import Python libs
+from __future__ import absolute_import, print_function, unicode_literals
+
 
 def __virtual__():
     '''
@@ -34,7 +37,7 @@ def present(name, **client_args):
             ret['comment'] = 'Database {0} is absent and will be created'\
                 .format(name)
             return ret
-        if __salt__['influxdb.db_create'](name, **client_args):
+        if __salt__['influxdb.create_db'](name, **client_args):
             ret['comment'] = 'Database {0} has been created'.format(name)
             ret['changes'][name] = 'Present'
             return ret
@@ -64,7 +67,7 @@ def absent(name, **client_args):
             ret['comment'] = 'Database {0} is present and needs to be removed'\
                 .format(name)
             return ret
-        if __salt__['influxdb.db_remove'](name, **client_args):
+        if __salt__['influxdb.drop_db'](name, **client_args):
             ret['comment'] = 'Database {0} has been removed'.format(name)
             ret['changes'][name] = 'Absent'
             return ret

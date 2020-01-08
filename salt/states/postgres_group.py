@@ -10,7 +10,7 @@ The postgres_group module is used to create and manage Postgres groups.
     frank:
       postgres_group.present
 '''
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals, print_function
 
 # Import Python libs
 
@@ -28,13 +28,14 @@ def __virtual__():
     '''
     Only load if the postgres module is present
     '''
-    return 'postgres.group_create' in __salt__
+    if 'postgres.group_create' not in __salt__:
+        return (False, 'Unable to load postgres module.  Make sure `postgres.bins_dir` is set.')
+    return True
 
 
 def present(name,
             createdb=None,
             createroles=None,
-            createuser=None,
             encrypted=None,
             superuser=None,
             inherit=None,
@@ -63,10 +64,6 @@ def present(name,
 
     createroles
         Is the group allowed to create other roles/users
-
-    createuser
-        Alias to create roles, and history problem, in pgsql normally
-        createuser == superuser
 
     encrypted
         Should the password be encrypted in the system catalog?
@@ -129,12 +126,10 @@ def present(name,
            'result': True,
            'comment': 'Group {0} is already present'.format(name)}
 
-    if createuser:
-        createroles = True
     # default to encrypted passwords
     if encrypted is not False:
         encrypted = postgres._DEFAULT_PASSWORDS_ENCRYPTION
-    # maybe encrypt if if not already and necessary
+    # maybe encrypt if it's not already and necessary
     password = postgres._maybe_encrypt_password(name,
                                                 password,
                                                 encrypted=encrypted)

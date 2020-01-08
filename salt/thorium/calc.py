@@ -3,13 +3,13 @@
 Used to manage the thorium register. The thorium register is where compound
 values are stored and computed, such as averages etc.
 
-.. versionadded:: Carbon
+.. versionadded:: 2016.11.0
 
 :depends: statistics PyPi module
 '''
 
 # import python libs
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, unicode_literals
 
 try:
     import statistics
@@ -25,27 +25,26 @@ def __virtual__():
     return HAS_STATS
 
 
-def calc(name, num, oper, ref=None):
+def calc(name, num, oper, minimum=0, maximum=0, ref=None):
     '''
     Perform a calculation on the ``num`` most recent values. Requires a list.
     Valid values for ``oper`` are:
 
-      - add: Add last ``num`` values together
-      - mul: Multiple last ``num`` values together
-      - mean: Calculate mean of last ``num`` values
-      - median: Calculate median of last ``num`` values
-      - median_low: Calculate low median of last ``num`` values
-      - median_high: Calculate high median of last ``num`` values
-      - median_grouped: Calculate grouped median of last ``num`` values
-      - mode: Calculate mode of last ``num`` values
+    - add: Add last ``num`` values together
+    - mul: Multiple last ``num`` values together
+    - mean: Calculate mean of last ``num`` values
+    - median: Calculate median of last ``num`` values
+    - median_low: Calculate low median of last ``num`` values
+    - median_high: Calculate high median of last ``num`` values
+    - median_grouped: Calculate grouped median of last ``num`` values
+    - mode: Calculate mode of last ``num`` values
 
+    USAGE:
 
-    USAGE::
-
-    code-block:: yaml
+    .. code-block:: yaml
 
         foo:
-          reg.calc:
+          calc.calc:
             - name: myregentry
             - num: 5
             - oper: mean
@@ -95,6 +94,12 @@ def calc(name, num, oper, ref=None):
 
     answer = ops[oper](vals)
 
+    if minimum > 0 and answer < minimum:
+        ret['result'] = False
+
+    if 0 < maximum < answer:
+        ret['result'] = False
+
     ret['changes'] = {
         'Number of values': len(vals),
         'Operator': oper,
@@ -103,130 +108,186 @@ def calc(name, num, oper, ref=None):
     return ret
 
 
-def add(name, num, ref=None):
+def add(name, num, minimum=0, maximum=0, ref=None):
     '''
     Adds together the ``num`` most recent values. Requires a list.
 
-    USAGE::
+    USAGE:
 
-    code-block:: yaml
+    .. code-block:: yaml
 
         foo:
-          reg.add:
+          calc.add:
             - name: myregentry
             - num: 5
     '''
-    return calc(name, num, 'add', ref)
+    return calc(
+        name=name,
+        num=num,
+        oper='add',
+        minimum=minimum,
+        maximum=maximum,
+        ref=ref
+    )
 
 
-def mul(name, num, ref=None):
+def mul(name, num, minimum=0, maximum=0, ref=None):
     '''
     Multiplies together the ``num`` most recent values. Requires a list.
 
-    USAGE::
+    USAGE:
 
-    code-block:: yaml
+    .. code-block:: yaml
 
         foo:
-          reg.mul:
+          calc.mul:
             - name: myregentry
             - num: 5
     '''
-    return calc(name, num, 'mul', ref)
+    return calc(
+        name=name,
+        num=num,
+        oper='mul',
+        minimum=minimum,
+        maximum=maximum,
+        ref=ref
+    )
 
 
-def mean(name, num, ref=None):
+def mean(name, num, minimum=0, maximum=0, ref=None):
     '''
     Calculates the mean of the ``num`` most recent values. Requires a list.
 
-    USAGE::
+    USAGE:
 
-    code-block:: yaml
+    .. code-block:: yaml
 
         foo:
-          reg.mean:
+          calc.mean:
             - name: myregentry
             - num: 5
     '''
-    return calc(name, num, 'mean', ref)
+    return calc(
+        name=name,
+        num=num,
+        oper='mean',
+        minimum=minimum,
+        maximum=maximum,
+        ref=ref
+    )
 
 
-def median(name, num, ref=None):
+def median(name, num, minimum=0, maximum=0, ref=None):
     '''
     Calculates the mean of the ``num`` most recent values. Requires a list.
 
-    USAGE::
+    USAGE:
 
-    code-block:: yaml
+    .. code-block:: yaml
 
         foo:
-          reg.median:
+          calc.median:
             - name: myregentry
             - num: 5
     '''
-    return calc(name, num, 'median', ref)
+    return calc(
+        name=name,
+        num=num,
+        oper='median',
+        minimum=minimum,
+        maximum=maximum,
+        ref=ref
+    )
 
 
-def median_low(name, num, ref=None):
+def median_low(name, num, minimum=0, maximum=0, ref=None):
     '''
     Calculates the low mean of the ``num`` most recent values. Requires a list.
 
-    USAGE::
+    USAGE:
 
-    code-block:: yaml
+    .. code-block:: yaml
 
         foo:
-          reg.median_low:
+          calc.median_low:
             - name: myregentry
             - num: 5
     '''
-    return calc(name, num, 'median_low', ref)
+    return calc(
+        name=name,
+        num=num,
+        oper='median_low',
+        minimum=minimum,
+        maximum=maximum,
+        ref=ref
+    )
 
 
-def median_high(name, num, ref=None):
+def median_high(name, num, minimum=0, maximum=0, ref=None):
     '''
     Calculates the high mean of the ``num`` most recent values. Requires a list.
 
-    USAGE::
+    USAGE:
 
-    code-block:: yaml
+    .. code-block:: yaml
 
         foo:
-          reg.median_high:
+          calc.median_high:
             - name: myregentry
             - num: 5
     '''
-    return calc(name, num, 'median_high', ref)
+    return calc(
+        name=name,
+        num=num,
+        oper='median_high',
+        minimum=minimum,
+        maximum=maximum,
+        ref=ref
+    )
 
 
-def median_grouped(name, num, ref=None):
+def median_grouped(name, num, minimum=0, maximum=0, ref=None):
     '''
     Calculates the grouped mean of the ``num`` most recent values. Requires a
     list.
 
-    USAGE::
+    USAGE:
 
-    code-block:: yaml
+    .. code-block:: yaml
 
         foo:
-          reg.median_grouped:
+          calc.median_grouped:
             - name: myregentry
             - num: 5
     '''
-    return calc(name, num, 'median_grouped', ref)
+    return calc(
+        name=name,
+        num=num,
+        oper='median_grouped',
+        minimum=minimum,
+        maximum=maximum,
+        ref=ref
+    )
 
 
-def mode(name, num, ref=None):
+def mode(name, num, minimum=0, maximum=0, ref=None):
     '''
     Calculates the mode of the ``num`` most recent values. Requires a list.
 
-    USAGE::
+    USAGE:
 
-    code-block:: yaml
+    .. code-block:: yaml
 
         foo:
-          reg.mode:
+          calc.mode:
             - name: myregentry
             - num: 5
     '''
-    return calc(name, num, 'mode', ref)
+    return calc(
+        name=name,
+        num=num,
+        oper='mode',
+        minimum=minimum,
+        maximum=maximum,
+        ref=ref
+    )

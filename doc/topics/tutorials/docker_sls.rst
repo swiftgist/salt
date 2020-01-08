@@ -1,7 +1,10 @@
+.. _docker-sls:
+
+=====================================================
 Running Salt States and Commands in Docker Containers
 =====================================================
 
-The Carbon release of Salt introduces the ability to execute Salt States
+The 2016.11.0 release of Salt introduces the ability to execute Salt States
 and Salt remote execution commands directly inside of Docker containers.
 
 This addition makes it possible to not only deploy fresh containers using
@@ -78,7 +81,7 @@ simple `salt-call` command:
 
 .. code-block:: bash
 
-    salt-call --local dockerng.call test test.ping
+    salt-call --local dockerng.call test test.version
     salt-call --local dockerng.call test network.interfaces
     salt-call --local dockerng.call test disk.usage
     salt-call --local dockerng.call test pkg.list_pkgs

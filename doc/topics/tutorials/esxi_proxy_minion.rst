@@ -9,12 +9,12 @@ ESXi Proxy Minion
 .. note::
 
     This tutorial assumes basic knowledge of Salt. To get up to speed, check
-    out the :doc:`Salt Walkthrough </topics/tutorials/walkthrough>`.
+    out the :ref:`Salt Walkthrough <tutorial-salt-walk-through>`.
 
     This tutorial also assumes a basic understanding of Salt Proxy Minions. If
     you're unfamiliar with Salt's Proxy Minion system, please read the
-    :doc:`Salt Proxy Minion </topics/proxyminion/index>` documentation and the
-    :doc:`Salt Proxy Minion End-to-End Example </topics/proxyminion/demo>`
+    :ref:`Salt Proxy Minion <proxy-minion>` documentation and the
+    :ref:`Salt Proxy Minion End-to-End Example <proxy-minion-end-to-end-example>`
     tutorial.
 
     The third assumption that this tutorial makes is that you also have a
@@ -33,7 +33,7 @@ proxy process that "proxies" communication from the Salt Master to the ESXi host
 The master does not know or care that the ESXi target is not a "real" Salt Minion.
 
 More in-depth conceptual reading on Proxy Minions can be found in the
-:doc:`Proxy Minion </topics/proxyminion/index>` section of Salt's documentation.
+:ref:`Proxy Minion <proxy-minion>` section of Salt's documentation.
 
 Salt's ESXi Proxy Minion was added in the 2015.8.4 release of Salt.
 
@@ -198,11 +198,11 @@ one password in this list is required.
 The proxy integration will try the passwords listed in order. It is
 configured this way so you can have a regular password and the password you
 may be updating for an ESXi host either via the
-:doc:`vsphere.update_host_password </ref/modules/all/salt.modules.vsphere>`
+:mod:`vsphere.update_host_password <salt.modules.vsphere.update_host_password>`
 execution module function or via the
-:doc:`esxi.password_present </ref/modules/all/salt.states.esxi>` state
+:mod:`esxi.password_present <salt.states.esxi.password_present>` state
 function. This way, after the password is changed, you should not need to
-restart the proxy minion--it should just pick up the the new password
+restart the proxy minion--it should just pick up the new password
 provided in the list. You can then change pillar at will to move that
 password to the front and retire the unused ones.
 
@@ -227,9 +227,10 @@ This allows you to use any number of potential fallback passwords.
 
     This scenario is especially true, and even slower, when the proxy
     minion first starts. If the correct password is not the first password
-    on the list, it may take up to a minute for ``test.ping`` to respond
-    with a ``True`` result. Once the initial authorization is complete, the
-    responses for commands will be a little faster.
+    on the list, it may take up to a minute for ``test.version`` to respond
+    with salt's version installed (Example: ``2018.3.4``. Once the initial 
+    authorization is complete, the responses for commands will be a little 
+    faster.
 
     To avoid these longer waiting periods, SaltStack recommends moving the
     correct password to the top of the list and restarting the proxy minion
@@ -366,7 +367,7 @@ proxy processes!
 
 .. code-block:: bash
 
-    # salt 'esxi-*' test.ping
+    # salt 'esxi-*' test.version
     esxi-1:
         True
     esxi-3:
@@ -377,7 +378,7 @@ Executing Commands
 ==================
 
 Now that you've configured your Proxy Minions and have them responding successfully
-to a ``test.ping``, we can start executing commands against the ESXi hosts via Salt.
+to a ``test.version``, we can start executing commands against the ESXi hosts via Salt.
 
 It's important to understand how this particular proxy works, and there are a couple
 of important pieces to be aware of in order to start running remote execution and
@@ -388,7 +389,7 @@ state commands against the ESXi host via a Proxy Minion: the
 vSphere Execution Module
 ------------------------
 
-The :doc:`Salt.modules.vsphere </ref/modules/all/salt.modules.vsphere>` is a
+The :mod:`Salt.modules.vsphere <salt.modules.vsphere>` is a
 standard Salt execution module that does the bulk of the work for the ESXi Proxy
 Minion. If you pull up the docs for it you'll see that almost every function in
 the module takes credentials (``username`` and ``password``) and a target ``host``
@@ -410,7 +411,7 @@ ESXi Execution Module
 
 In order for the Pillar information set up in the `Configuration`_ section above to
 be passed to the function call in the vSphere Execution Module, the
-:doc:`salt.modules.esxi </ref/modules/all/salt.modules.esxi>` execution module acts
+:mod:`salt.modules.esxi <salt.modules.esxi>` execution module acts
 as a "shim" between the vSphere execution module functions and the proxy process.
 
 The "shim" takes the authentication credentials specified in the Pillar files and
@@ -424,8 +425,8 @@ Proxy Minion.
 
 Because of the presence of the shim, to lookup documentation for what
 functions you can use to interface with the ESXi host, you'll want to
-look in :doc:`salt.modules.vsphere </ref/modules/all/salt.modules.vsphere>`
-instead of :doc:`salt.modules.esxi </ref/modules/all/salt.modules.esxi>`.
+look in :mod:`salt.modules.vsphere <salt.modules.vsphere>`
+instead of :mod:`salt.modules.esxi <salt.modules.esxi>`.
 
 
 Running Remote Execution Commands
@@ -450,7 +451,7 @@ The ESXi State Module functions similarly to other state modules. The "shim" pro
 by the `ESXi Execution Module`_ passes the necessary ``host``, ``username``, and
 ``password`` credentials through, so those options don't need to be provided in the
 state. Other than that, state files are written and executed just like any other
-Salt state. See the :doc:`salt.modules.esxi </ref/states/all/salt.states.esxi>` state
+Salt state. See the :mod:`salt.modules.esxi <salt.states.esxi>` state
 for ESXi state functions.
 
 The follow state file is an example of how to configure various pieces of an ESXi host
@@ -521,7 +522,7 @@ Relevant Salt Files and Resources
 - :mod:`ESXi Proxy Minion <salt.proxy.esxi>`
 - :mod:`ESXi Execution Module <salt.modules.esxi>`
 - :mod:`ESXi State Module <salt.states.esxi>`
-- :doc:`Salt Proxy Minion Docs </topics/proxyminion/index>`
-- :doc:`Salt Proxy Minion End-to-End Example </topics/proxyminion/demo>`
+- :ref:`Salt Proxy Minion Docs <proxy-minion>`
+- :ref:`Salt Proxy Minion End-to-End Example <proxy-minion-end-to-end-example>`
 - :mod:`vSphere Execution Module <salt.modules.vsphere>`
 

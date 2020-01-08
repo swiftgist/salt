@@ -1,38 +1,36 @@
 # -*- coding: utf-8 -*-
 '''
-    :codeauthor: :email:`Rahul Handay <rahulha@saltstack.com>`
+    :codeauthor: Rahul Handay <rahulha@saltstack.com>
 '''
 
 # Import Python Libs
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, unicode_literals
 
 # Import Salt Testing Libs
-from salttesting import TestCase, skipIf
-from salttesting.helpers import ensure_in_syspath
-from salttesting.mock import (
+from tests.support.mixins import LoaderModuleMockMixin
+from tests.support.unit import TestCase, skipIf
+from tests.support.mock import (
     patch,
     MagicMock,
     NO_MOCK,
     NO_MOCK_REASON
 )
 
-ensure_in_syspath('../../')
-
 # Import Salt Libs
 from salt.exceptions import SaltInvocationError
-from salt.states import test
-
-# Globals
-test.__salt__ = {}
-test.__opts__ = {}
-test.__low__ = {'__reqs__': {'watch': ''}}
+import salt.states.test as test
+from salt.utils.odict import OrderedDict
+from salt.ext import six
 
 
 @skipIf(NO_MOCK, NO_MOCK_REASON)
-class TestTestCase(TestCase):
+class TestTestCase(TestCase, LoaderModuleMockMixin):
     '''
         Validate the test state
     '''
+    def setup_loader_modules(self):
+        return {test: {'__low__': {'__reqs__': {'watch': ''}}}}
+
     def test_succeed_without_changes(self):
         '''
             Test to returns successful.
@@ -314,6 +312,48 @@ class TestTestCase(TestCase):
         with patch.dict(test.__salt__, {'pillar.get': pillar_mock}):
             self.assertEqual(test.check_pillar('salt', present='my_pillar'), ret)
 
+    def test_check_pillar_string(self):
+        '''
+            Test to ensure the check_pillar function
+            works properly with the 'key_type' checks,
+            using the string key_type.
+        '''
+        ret = {
+            'name': 'salt',
+            'changes': {},
+            'result': True,
+            'comment': ''
+        }
+        pillar_return = 'I am a pillar.'
+        pillar_mock = MagicMock(return_value=pillar_return)
+        with patch.dict(test.__salt__, {'pillar.get': pillar_mock}):
+            self.assertEqual(test.check_pillar('salt', string='my_pillar'), ret)
+        # With unicode (py2) or str (py3) strings
+        pillar_return = six.text_type('I am a pillar.')
+        pillar_mock = MagicMock(return_value=pillar_return)
+        with patch.dict(test.__salt__, {'pillar.get': pillar_mock}):
+            self.assertEqual(test.check_pillar('salt', string='my_pillar'), ret)
+        # With a dict
+        pillar_return = {'this': 'dictionary'}
+        pillar_mock = MagicMock(return_value=pillar_return)
+        with patch.dict(test.__salt__, {'pillar.get': pillar_mock}):
+            self.assertFalse(test.check_pillar('salt', string='my_pillar')['result'])
+        # With a list
+        pillar_return = ['I am a pillar.']
+        pillar_mock = MagicMock(return_value=pillar_return)
+        with patch.dict(test.__salt__, {'pillar.get': pillar_mock}):
+            self.assertFalse(test.check_pillar('salt', string='my_pillar')['result'])
+        # With a boolean
+        pillar_return = True
+        pillar_mock = MagicMock(return_value=pillar_return)
+        with patch.dict(test.__salt__, {'pillar.get': pillar_mock}):
+            self.assertFalse(test.check_pillar('salt', string='my_pillar')['result'])
+        # With an int
+        pillar_return = 1
+        pillar_mock = MagicMock(return_value=pillar_return)
+        with patch.dict(test.__salt__, {'pillar.get': pillar_mock}):
+            self.assertFalse(test.check_pillar('salt', string='my_pillar')['result'])
+
     def test_check_pillar_dictionary(self):
         '''
             Test to ensure the check_pillar function
@@ -330,7 +370,28 @@ class TestTestCase(TestCase):
         pillar_mock = MagicMock(return_value=pillar_return)
         with patch.dict(test.__salt__, {'pillar.get': pillar_mock}):
             self.assertEqual(test.check_pillar('salt', dictionary='my_pillar'), ret)
-
-if __name__ == '__main__':
-    from integration import run_tests
-    run_tests(TestTestCase, needs_daemon=False)
+        # With an ordered dict
+        pillar_return = OrderedDict({'this': 'dictionary'})
+        pillar_mock = MagicMock(return_value=pillar_return)
+        with patch.dict(test.__salt__, {'pillar.get': pillar_mock}):
+            self.assertEqual(test.check_pillar('salt', dictionary='my_pillar'), ret)
+        # With a string
+        pillar_return = 'I am a pillar.'
+        pillar_mock = MagicMock(return_value=pillar_return)
+        with patch.dict(test.__salt__, {'pillar.get': pillar_mock}):
+            self.assertFalse(test.check_pillar('salt', dictionary='my_pillar')['result'])
+        # With a list
+        pillar_return = ['I am a pillar.']
+        pillar_mock = MagicMock(return_value=pillar_return)
+        with patch.dict(test.__salt__, {'pillar.get': pillar_mock}):
+            self.assertFalse(test.check_pillar('salt', dictionary='my_pillar')['result'])
+        # With a boolean
+        pillar_return = True
+        pillar_mock = MagicMock(return_value=pillar_return)
+        with patch.dict(test.__salt__, {'pillar.get': pillar_mock}):
+            self.assertFalse(test.check_pillar('salt', dictionary='my_pillar')['result'])
+        # With an int
+        pillar_return = 1
+        pillar_mock = MagicMock(return_value=pillar_return)
+        with patch.dict(test.__salt__, {'pillar.get': pillar_mock}):
+            self.assertFalse(test.check_pillar('salt', dictionary='my_pillar')['result'])

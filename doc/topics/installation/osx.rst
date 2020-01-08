@@ -1,12 +1,15 @@
-====
-OS X
-====
+.. _macos-installation:
+
+=====
+macOS
+=====
 
 Installation from the Official SaltStack Repository
 ===================================================
 
 **Latest stable build from the selected branch**:
-|osxdownload|
+|osxdownloadpy2|
+|osxdownloadpy3|
 
 The output of ``md5 <salt pkg>`` should match the contents of the
 corresponding md5 file.
@@ -31,13 +34,28 @@ It should be noted that Homebrew explicitly discourages the `use of sudo`_:
 Installation from MacPorts
 ==========================
 
+Macports isolates its dependencies from the OS, and installs salt in /opt/local by default, with config files under /opt/local/etc/salt. For best results, add /opt/local/bin to your PATH.
+
 .. code-block:: bash
 
     sudo port install salt
 
+Variants allow selection of python version used to run salt, defaulting to python27, but also supporting python34, python35, and python36. To install salt with Python 3.6, use the python36 variant, for example:
+
+.. code-block:: bash
+
+    sudo port install salt @python36
+
+Startup items (for master, minion, and rest-cherrypy API gateway, respectively) are installed by subport targets. These will register launchd LaunchDaemons as org.macports.salt-minion, for example, to trigger automatic startup of the salt-minion through launchd. LaunchDaemons for salt can be started and stopped without reboot using the macprots load and unload commands.
+
+.. code-block:: bash
+
+    sudo port install salt-master salt-minion salt-api
+    sudo port load salt-master salt-minion salt-api
+
 Installation from Pip
 =====================
-When only using the OS X system's pip, install this way:
+When only using the macOS system's pip, install this way:
 
 .. code-block:: bash
 
@@ -45,13 +63,16 @@ When only using the OS X system's pip, install this way:
 
 Salt-Master Customizations
 ==========================
-To run salt-master on OS X, sudo add this configuration option to the /etc/salt/master file:
+.. note::
+    Salt master on macOS is not tested or supported by SaltStack. See `SaltStack Platform Support <https://saltstack.com/product-support-lifecycle/>`_ for more information.
+
+To run salt-master on macOS, sudo add this configuration option to the /etc/salt/master file:
 
 .. code-block:: bash
 
     max_open_files: 8192
 
-On versions previous to OS X 10.10 (Yosemite), increase the root user maxfiles limit:
+On versions previous to macOS 10.10 (Yosemite), increase the root user maxfiles limit:
 
 .. code-block:: bash
 
@@ -59,7 +80,7 @@ On versions previous to OS X 10.10 (Yosemite), increase the root user maxfiles l
 
 .. note::
 
-    On OS X 10.10 (Yosemite) and higher, maxfiles should not be adjusted. The
+    On macOS 10.10 (Yosemite) and higher, maxfiles should not be adjusted. The
     default limits are sufficient in all but the most extreme scenarios.
     Overriding these values with the setting below will cause system
     instability!
@@ -73,5 +94,5 @@ Now the salt-master should run without errors:
 Post-installation tasks
 =======================
 
-Now go to the :doc:`Configuring Salt</ref/configuration/index>` page.
+Now go to the :ref:`Configuring Salt<configuring-salt>` page.
 

@@ -6,10 +6,13 @@ This includes client side transport, for the ReqServer and the Publisher
 '''
 
 # Import Python Libs
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, unicode_literals
+import logging
 
 # Import Salt Libs
-from salt.utils.async import SyncWrapper
+from salt.utils.asynchronous import SyncWrapper
+
+log = logging.getLogger(__name__)
 
 
 class ReqChannel(object):
@@ -103,9 +106,6 @@ class AsyncReqChannel(AsyncChannel):
         if ttype == 'zeromq':
             import salt.transport.zeromq
             return salt.transport.zeromq.AsyncZeroMQReqChannel(opts, **kwargs)
-        elif ttype == 'raet':
-            import salt.transport.raet
-            return salt.transport.raet.AsyncRAETReqChannel(opts, **kwargs)
         elif ttype == 'tcp':
             if not cls._resolver_configured:
                 # TODO: add opt to specify number of resolver threads
@@ -116,7 +116,9 @@ class AsyncReqChannel(AsyncChannel):
             import salt.transport.local
             return salt.transport.local.AsyncLocalChannel(opts, **kwargs)
         else:
-            raise Exception('Channels are only defined for ZeroMQ and raet')
+            raise Exception(
+                'Channels are only defined for tcp, zeromq, and local'
+            )
             # return NewKindOfChannel(opts, **kwargs)
 
     def send(self, load, tries=3, timeout=60, raw=False):
@@ -147,21 +149,14 @@ class AsyncPubChannel(AsyncChannel):
             ttype = opts['transport']
         elif 'transport' in opts.get('pillar', {}).get('master', {}):
             ttype = opts['pillar']['master']['transport']
-        if ttype == 'detect':
-            opts['__last_transport'] = 'tcp'
-            opts['transport'] = 'tcp'
-            ttype = opts['transport']
-        elif '__last_transport' in opts:
-            opts['transport'] = 'zeromq' if opts['transport'] == 'tcp' else 'tcp'
-            ttype = opts['transport']
 
         # switch on available ttypes
+        if ttype == 'detect':
+            opts['detect_mode'] = True
+            log.info('Transport is set to detect; using %s', ttype)
         if ttype == 'zeromq':
             import salt.transport.zeromq
             return salt.transport.zeromq.AsyncZeroMQPubChannel(opts, **kwargs)
-        elif ttype == 'raet':  # TODO:
-            import salt.transport.raet
-            return salt.transport.raet.AsyncRAETPubChannel(opts, **kwargs)
         elif ttype == 'tcp':
             if not cls._resolver_configured:
                 # TODO: add opt to specify number of resolver threads
@@ -172,7 +167,9 @@ class AsyncPubChannel(AsyncChannel):
             import salt.transport.local
             return salt.transport.local.AsyncLocalPubChannel(opts, **kwargs)
         else:
-            raise Exception('Channels are only defined for ZeroMQ and raet')
+            raise Exception(
+                'Channels are only defined for tcp, zeromq, and local'
+            )
             # return NewKindOfChannel(opts, **kwargs)
 
     def connect(self):

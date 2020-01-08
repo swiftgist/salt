@@ -7,17 +7,14 @@ Module for OpenStack Management
 :depends:       openstack-utils
 :platform:      linux
 '''
-
-from __future__ import absolute_import
-
 # Import python libs
+from __future__ import absolute_import, print_function, unicode_literals
 import logging
+import os.path
 
 # Import salt libs
-import salt.utils
-
-# Import third party libs
-import os.path
+import salt.utils.files
+import salt.utils.stringutils
 
 log = logging.getLogger(__name__)
 
@@ -37,11 +34,12 @@ def __virtual__():
 
 def start_service(service_name):
     '''
-    Start OpenStack service immiedately
+    Start OpenStack service immediately
 
     CLI Example:
 
     .. code-block:: bash
+
         salt '*' openstack_mng.start_service neutron
     '''
 
@@ -51,11 +49,12 @@ def start_service(service_name):
 
 def stop_service(service_name):
     '''
-    Stop OpenStack service immiedately
+    Stop OpenStack service immediately
 
     CLI Example:
 
     .. code-block:: bash
+
         salt '*' openstack_mng.stop_service neutron
     '''
 
@@ -65,7 +64,7 @@ def stop_service(service_name):
 
 def restart_service(service_name, minimum_running_time=None):
     '''
-    Restart OpenStack service immiedately, or only if it's running longer than
+    Restart OpenStack service immediately, or only if it's running longer than
     specified value
 
     CLI Example:
@@ -82,8 +81,12 @@ def restart_service(service_name, minimum_running_time=None):
         services = __salt__['cmd.run'](['/usr/bin/openstack-service', 'list', service_name]).split('\n')
         for service in services:
             service_info = __salt__['service.show'](service)
-
-            boot_time = float(salt.utils.fopen('/proc/uptime').read().split(' ')[0])
+            with salt.utils.files.fopen('/proc/uptime') as rfh:
+                boot_time = float(
+                    salt.utils.stringutils.to_unicode(
+                        rfh.read()
+                    ).split(' ')[0]
+                )
 
             expr_time = int(service_info.get('ExecMainStartTimestampMonotonic', 0)) / 1000000 < boot_time - minimum_running_time
             expr_active = service_info.get('ActiveState') == "active"
